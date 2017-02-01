@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript">
+            
+            var name = prompt("Enter your name: ", "Anonymoose");
+            
+            if(name == "null"){
+            name = "Anonymoose";
+            }
+			var socket = io.connect();
+            
+			
+			socket.on('connect', function() {
+				console.log("Connected");
+			});
+            
+
+			// Receive from any event
+			socket.on('chatmessage', function (data) {
+				console.log(data);
+				document.getElementById('messages').innerHTML = document.getElementById('messages').innerHTML + String(data) + "<br>";
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+			});
+			
+			var sendmessage = function(message) {
+                var d = new Date();
+				console.log("chatmessage: " + message);
+				socket.emit('chatmessage', ("<font color='#777'>[" + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2) + "]</font> <strong><font color='"+ document.getElementById("color").value + "'>" + name + ": </font></strong>" + message));
+                document.getElementById('messages').innerHTML = document.getElementById('messages').innerHTML + ("<font color='#777'>[" + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2) + "]</font> <strong><font color='"+ document.getElementById("color").value + "'>me: </font></strong>" + message) + "<br>"; //slice method of formatting from http://stackoverflow.com/posts/8513046/revisions courtesy of David Hedlund
+                document.getElementById("message").value = "";
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+			};
+            
+            function chaos() {
+                var rand = Math.random()*360 - 180;
+                console.log(rand);
+                socket.emit('chaos', rand);
+                document.getElementById('main').style.transform = "rotate(" + rand + "deg)";
+            }
+            
+            socket.on('recchaos', function(data) {
+                console.log("Recieved instruction: Chaos " + data);
+                document.getElementById('main').style.transform = "rotate(" + data + "deg)";
+            })
+
+	
+		</script>	
+	</head>
+ <body>
+     <div id="main" style="height: 550px; width: 500px; margin: 200px auto; transform:rotate(0deg);">
+ <div id="messages" style="height:500px; width:500px; overflow-y:scroll; border-bottom-style: solid;">
+ 
+ </div>
+ <input type="text" id="message" name="message">
+     <input type="color" id="color" value="#000000">
+ <input type="submit" value="submit" onclick="sendmessage(document.getElementById('message').value);">
+     <input type="button" value="Chaos" onclick="chaos()">
+     </div>
+ </body>
+</html>
